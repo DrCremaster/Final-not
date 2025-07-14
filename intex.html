@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tıp Fakültesi Not Hesaplayıcı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    /* Genel Ayarlar */
+    body {
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding-top: 40px;
+      padding-bottom: 40px;
+      font-size: 16px;
+      transition: background-color 0.5s, color 0.5s;
+    }
+    .container {
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 450px;
+      text-align: center;
+      transition: background-color 0.5s, box-shadow 0.5s;
+    }
+
+    /* Tema Seçici */
+    .theme-selector {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      background-color: rgba(128, 128, 128, 0.1);
+      padding: 8px;
+      border-radius: 10px;
+    }
+    .theme-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      background-color: #e9ecef;
+      color: #1c1c1c;
+    }
+    .theme-btn.active {
+      background-color: #007bff;
+      color: white;
+    }
+
+    /* Ortak Bileşenler */
+    h2 {
+      font-weight: 700;
+      margin-top: 0;
+    }
+    #komiteler {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .komite-input-group {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .komite-input-group label {
+      flex-basis: 100px;
+      text-align: left;
+      font-weight: 600;
+    }
+    #komiteler input {
+      flex-grow: 1;
+      width: auto;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+      text-align: center;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      border: 1px solid #ced4da;
+    }
+    #komiteler input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+    .button-group {
+      margin-top: 25px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      transition: background-color 0.3s, transform 0.2s;
+      background-color: #007bff;
+      color: white;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      background-color: #0056b3;
+    }
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    #result {
+      margin-top: 30px;
+      border-radius: 8px;
+      padding: 20px;
+      display: none;
+      background: #f8f9fa;
+      color: #1c1c1c;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    #komite-ortalama {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+    }
+    #final-text {
+      font-size: 1.2rem;
+    }
+    #final-num {
+      font-size: 3.5rem;
+      font-weight: 700;
+      display: block;
+      margin: 5px 0;
+      color: #28a745;
+    }
+    #message {
+      margin-top: 15px;
+      font-size: 1rem;
+      font-weight: 600;
+      min-height: 40px;
+    }
+    .warning {
+      color: #dc3545;
+      font-weight: normal;
+    }
+
+    .spacer {
+      height: 80vh;
+    }
+
+    /* --- TEMALAR --- */
+    body.theme-dark {
+      background: #121212;
+      color: #e0e0e0;
+    }
+    .theme-dark .container {
+      background: #1e1e1e;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+    .theme-dark h2 {
+      color: #bb86fc;
+    }
+    .theme-dark #komiteler input {
+      background: #333;
+      border: 1px solid #444;
+      color: #e0e0e0;
+    }
+    .theme-dark #komiteler input:focus {
+      border-color: #bb86fc;
+      box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.25);
+    }
+    .theme-dark .btn-primary {
+      background-color: #bb86fc;
+      color: #121212;
+    }
+    .theme-dark .btn-primary:hover {
+      background-color: #a36ef4;
+    }
+    .theme-dark .btn-secondary {
+      background-color: #333;
+      color: #e0e0e0;
+    }
+    .theme-dark .btn-secondary:hover {
+      background-color: #444;
+    }
+    .theme-dark #result {
+      background: #2a2a2a;
+      color: #e0e0e0;
+      box-shadow: 0 0 10px rgba(187,134,252,0.7);
+    }
+    .theme-dark #final-num {
+      color: #03dac6;
+    }
+    .theme-dark .warning,
+    .theme-dark #final-num.warning {
+      color: #cf6679;
+    }
+    .theme-dark .theme-btn {
+      background-color: #333;
+      color: #e0e0e0;
+    }
+    .theme-dark .theme-btn.active {
+      background-color: #bb86fc;
+      color: #121212;
+    }
+
+    body.theme-light {
+      background: #f4f7f6;
+      color: #1c1c1c;
+    }
+    .theme-light .container {
+      background: #ffffff;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    .theme-light h2 {
+      color: #0056b3;
+    }
+    .theme-light #komiteler input {
+      background: #e9ecef;
+      border: 1px solid #ced4da;
+      color: #495057;
+    }
+    .theme-light #komiteler input:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+    .theme-light .btn-primary {
+      background-color: #007bff;
+      color: #ffffff;
+    }
+    .theme-light .btn-primary:hover {
+      background-color: #0056b3;
+    }
+    .theme-light .btn-secondary {
+      background-color: #e9ecef;
+      color: #1c1c1c;
+    }
+    .theme-light .btn-secondary:hover {
+      background-color: #d1d5d9;
+    }
+    .theme-light #result {
+      background: #f8f9fa;
+      color: #1c1c1c;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .theme-light #final-num {
+      color: #28a745;
+    }
+    .theme-light .warning,
+    .theme-light #final-num.warning {
+      color: #dc3545;
+    }
+    .theme-light .theme-btn {
+      background-color: #e9ecef;
+      color: #1c1c1c;
+    }
+    .theme-light .theme-btn.active {
+      background-color: #007bff;
+      color: #ffffff;
+    }
+
+    @keyframes gradient-animation {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+    body.theme-dynamic {
+      color: #fff;
+      background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+      background-size: 400% 400%;
+      animation: gradient-animation 15s ease infinite;
+    }
+    .theme-dynamic .container {
+      background-color: rgba(20, 20, 20, 0.75);
+      backdrop-filter: blur(5px);
+      box-shadow: 0 0 10px rgba(35, 213, 171, 0.5);
+    }
+    .theme-dynamic h2 {
+      color: #ffffff;
+      text-shadow: 0 0 8px rgba(0,0,0,0.5);
+    }
+    .theme-dynamic .theme-btn {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    .theme-dynamic .theme-btn.active {
+      background-color: #fff;
+      color: #000;
+    }
+    .theme-dynamic #komiteler input,
+    .theme-dynamic .btn-secondary {
+      background: #444;
+      border: 1px solid #555;
+      color: #e0e0e0;
+    }
+    .theme-dynamic #komiteler input:focus {
+      border-color: #fff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+    }
+    .theme-dynamic .btn-primary {
+      background-color: #fff;
+      color: #000;
+    }
+    .theme-dynamic .btn-primary:hover {
+      background-color: #ddd;
+    }
+    .theme-dynamic #result { /* Sonuç bölümüne özel stil */
+      background-color: rgba(20, 20, 20, 0.85); /* Daha belirgin arka plan */
+      color: #fff; /* Metin rengi beyaz */
+      box-shadow: 0 0 10px rgba(35, 213, 171, 0.7);
+    }
+    .theme-dynamic #final-num {
+      color: #03dac6;
+      text-shadow: 0 0 5px rgba(0,0,0,0.8);
+    }
+    .theme-dynamic #message {
+      color: #fff; /* Uyarı mesajının rengi */
+    }
+    .theme-dynamic .warning {
+      color: #ff8a80; /* Uyarı mesajının rengi */
+    }
+    .theme-dynamic #komite-ortalama {
+      color: #fff; /* Komite ortalaması rengi */
+    }
+    .theme-dynamic #final-text {
+      color: #fff; /* Final metni rengi */
+    }
+  </style>
+</head>
+<body>
+  <div class="theme-selector">
+    <button class="theme-btn" onclick="setTheme('dark')">Koyu</button>
+    <button class="theme-btn" onclick="setTheme('light')">Açık</button>
+    <button class="theme-btn" onclick="setTheme('dynamic')">Dinamik</button>
+  </div>
+
+  <div class="container">
+    <h2>Tıp Fakültesi Final Notu Hesaplayıcı</h2>
+    <div id="komiteler">
+      <div class="komite-input-group">
+        <label>Komite 1:</label>
+        <input type="number" id="k1" min="0" max="100" placeholder="0-100" />
+      </div>
+    </div>
+    <div class="button-group">
+      <button class="btn btn-secondary" onclick="addKomite()">+ Ekle</button>
+      <button class="btn btn-secondary" onclick="removeKomite()">- Sil</button>
+      <button class="btn btn-primary" onclick="hesapla()">Hesapla!</button>
+    </div>
+    <div id="result">
+      <div id="komite-ortalama"></div>
+      <div id="final-text"></div>
+      <span id="final-num">0</span>
+      <div id="message"></div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <script>
+    let komiteSayisi = 1;
+
+    // --- ESPRİ HAVUZLARI ---
+    const jokes = {
+      mal: [
+        "Doktor değil hastaneye saksı olur mk.",
+        "Okuduğun mektebi s…km.",
+        "Başarılarının devamını dilerim (: ",
+        "Başka bölümlerde var karşim.",
+        "Hayat yok mk."
+      ],
+      kotu: [
+        "Rabbine sığın.",
+        "Ölmüşsün haberin yok.",
+        "Kağıdın zaman kaybı.",
+        "Not mu yazayım, ölü raporu mu?",
+        "Az yattın kral, bırak yorma kendini."
+      ],
+      vasat: [
+        "Ucu ucuna geçersin belki.",
+        "Vasatın dibi, ama düşmedin henüz.",
+        "Arada kütübe uğra.",
+        "Hocana sığın.",
+        "Yataktan çık arada."
+      ],
+      vasatUstu: [
+        "Fena değil ama havalara girme.",
+        "Kalırsan patlarım .",
+        "Finalde az gazla, geçersin kanka.",
+        "Hocaya sığınn.",
+        "Bi tık daha kassan iyi olurdu be."
+      ],
+      fenaDegil: [
+        "Geliyo geliyooo!!!.",
+        "Finalde yaparsınnnn.",
+        "Çıkmışla rahat.",
+        "Fena değil.",
+        "Finalde olmazsa bütte kesin."
+      ],
+      iyi: [
+        "Finali formatek say.",
+        "Fena değilsin len.",
+        "Hayırlı olsunn.",
+        "Adam olana fazla bile.",
+        "Adam olursun sen."
+      ],
+      cokIyi: [
+        "Vay inek.",
+        "Aslanım benim.",
+        "Pratiklere girme lo.",
+        "Azcık yaşam belirtisi var.",
+        "Ders anlatır mk."
+      ],
+      efsane: [
+        "Hayat yok mk.",
+        "Yaşam belirtisi yok.",
+        "Hocalar daha az yapar mk.",
+        "TUS data peşinde.",
+        "Hayatını s…ktğim."
+      ],
+      finalOver100: [
+        "Poku yemişke, faka basmışke.",
+        "Aynen karşim geçtin.",
+        "Başarılarının devamını dilerim.",
+        "Küçük kardeşlere abi.",
+        "Aslanım benim."
+      ],
+      final82_100: [
+        "Aynen karşim geçtin bak.",
+        "Arada uyan kral.",
+        "Az yattın ya, biraz daha uyu.",
+        "Gelme mk sınava.",
+        "Ah ah canım karşim."
+      ],
+      final75_82: [
+        "Poku yiyecekko, faka basacakko.",
+        "Arada çalış bee.",
+        "Başını alırsın karşim.",
+        "Mokoko.",
+        "Büt ke geliyo ke."
+      ],
+      final65_75: [
+        "Az daha çalışaydın ya ucube.",
+        "Bütle zorlarsın hallolur.",
+        "Mokoko olacakko.",
+        "Yatmak nasıldı kral.",
+        "Kıçını kaldır arada."
+      ],
+      final57_65: [
+        "Az daha çabala lan.",
+        "Hadi hayırlı olsun dicez.",
+        "Bütte kesin, yeni sınıf hayırlı olsun karşim.",
+        "Az daha çalışaydın da rahat geçeydin bütü.",
+        "Senin ben mk."
+      ],
+      final50_57: [
+        "İsme 40 puan veriyorlar zaten.",
+        "Rahatsınnn.",
+        "Amına kodum az daha çalışsaydın ya.",
+        "Dua et baraj yok.",
+        "Ulan yine iyisin kerata."
+      ],
+      final49_5: [
+        "Ulan götü kurtardın ha.",
+        "Aslanım benim.",
+        "Ulan yine iyisin kerata.",
+        "Hoj geldin üst sınıf.",
+        "Yat amına."
+      ]
+    };
+
+    function getRandomJoke(category) {
+      const arr = jokes[category];
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // Tema değiştirme fonksiyonu
+    function setTheme(themeName) {
+      localStorage.setItem('selectedTheme', themeName);
+      document.body.className = 'theme-' + themeName;
+      document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.theme-btn[onclick="setTheme('${themeName}')"]`).classList.add('active');
+    }
+    (function () {
+      const savedTheme = localStorage.getItem('selectedTheme') || 'dark';
+      setTheme(savedTheme);
+    })();
+
+    // Hesaplayıcı Fonksiyonları
+    function addKomite() {
+      komiteSayisi++;
+      const div = document.createElement('div');
+      div.className = 'komite-input-group';
+      div.innerHTML = `<label>Komite ${komiteSayisi}:</label>
+                     <input type="number" id="k${komiteSayisi}" min="0" max="100" placeholder="0-100">`;
+      document.getElementById('komiteler').appendChild(div);
+    }
+    function removeKomite() {
+      if (komiteSayisi > 1) {
+        document.getElementById('komiteler').lastElementChild.remove();
+        komiteSayisi--;
+      }
+    }
+
+    function hesapla() {
+      const notlar = [];
+      const resultDiv = document.getElementById('result');
+      for (let i = 1; i <= komiteSayisi; i++) {
+        const input = document.getElementById('k'+i);
+        const not = parseFloat(input.value);
+        if (isNaN(not) || not < 0 || not > 100) {
+          showMessage('Tüm komite notlarını 0–100 arası girmelisin intern doktor!', true);
+          resultDiv.style.display = 'none';
+          return;
+        }
+        notlar.push(not);
+      }
+      resultDiv.style.display = 'block';
+
+      const toplam = notlar.reduce((a, b) => a + b, 0);
+      const ortalama = toplam / notlar.length;
+
+      const komiteOrtalamaEl = document.getElementById('komite-ortalama');
+      const finalTextEl = document.getElementById('final-text');
+      const numEl = document.getElementById('final-num');
+
+      komiteOrtalamaEl.textContent = `Komite Ortalaman: ${ortalama.toFixed(2)}`;
+
+      // --- YENİ GEÇME KURALI ---
+      if (ortalama >= 79.5) {
+        finalTextEl.style.display = 'none';
+        numEl.textContent = 'GEÇTİN!';
+        numEl.className = '';
+        showMessage(getRandomJoke('finalOver100')); // Üst sınırdaki espriyi kullandım
+        return;
+      }
+
+      // Finalsiz geçemediysen hesaplamaya devam
+      finalTextEl.style.display = 'block';
+      finalTextEl.textContent = 'Finalden alman gereken minimum not:';
+
+      let gerekenNot = (60 - 0.6 * ortalama) / 0.4;
+      const finalNotu = Math.max(gerekenNot, 50);
+
+      numEl.textContent = finalNotu.toFixed(1);
+
+      let jokeCategory;
+      if (finalNotu > 100) {
+        numEl.className = 'warning';
+        jokeCategory = 'finalOver100';
+      } else if (finalNotu >= 82) {
+        jokeCategory = 'final82_100';
+      } else if (finalNotu >= 75) {
+        jokeCategory = 'final75_82';
+      } else if (finalNotu >= 65) {
+        jokeCategory = 'final65_75';
+      } else if (finalNotu >= 57) {
+        jokeCategory = 'final57_65';
+      } else if (finalNotu >= 50) {
+        jokeCategory = 'final50_57';
+      } else {
+        jokeCategory = 'final49_5';
+      }
+      showMessage(getRandomJoke(jokeCategory), finalNotu > 100);
+
+      // Komite ortalamasına göre espriler
+      if (ortalama < 34) showMessage(getRandomJoke('mal'));
+      else if (ortalama < 50) showMessage(getRandomJoke('kotu'));
+      else if (ortalama < 60) showMessage(getRandomJoke('vasat'));
+      else if (ortalama < 64) showMessage(getRandomJoke('vasatUstu'));
+      else if (ortalama < 70) showMessage(getRandomJoke('fenaDegil'));
+      else if (ortalama < 77) showMessage(getRandomJoke('iyi'));
+      else if (ortalama < 85) showMessage(getRandomJoke('cokIyi'));
+      else showMessage(getRandomJoke('efsane'));
+    }
+
+    function showMessage(txt, isWarning = false) {
+      const m = document.getElementById('message');
+      m.textContent = txt;
+      m.classList.toggle('warning', isWarning);
+    }
+  </script>
+</body>
+</html>
