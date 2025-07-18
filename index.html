@@ -134,6 +134,12 @@
     }
     #komite-ortalama {
       font-size: 1.1rem;
+      margin-bottom: 5px;
+      font-weight: 700;
+    }
+    #komite-notu {
+      font-size: 1.5rem;
+      font-weight: 700;
       margin-bottom: 15px;
     }
     #final-text {
@@ -344,6 +350,32 @@
     .theme-dynamic #final-text {
       color: #fff; /* Final metni rengi */
     }
+    
+    /* Renk kategorileri */
+    .not-efsane {
+      color: #00ff00 !important;
+    }
+    .not-cokIyi {
+      color: #4CAF50 !important;
+    }
+    .not-iyi {
+      color: #8BC34A !important;
+    }
+    .not-fenaDegil {
+      color: #FFC107 !important;
+    }
+    .not-vasatUstu {
+      color: #FF9800 !important;
+    }
+    .not-vasat {
+      color: #FF5722 !important;
+    }
+    .not-kotu {
+      color: #f44336 !important;
+    }
+    .not-mal {
+      color: #d32f2f !important;
+    }
   </style>
 </head>
 <body>
@@ -354,7 +386,9 @@
   </div>
 
   <div class="container">
-    <h2>Tıp Fakültesi Final Notu Hesaplayıcı</h2>
+    <h2>Yavşak Fıratın hatrına<h2>
+      
+    </h2>Tıp Fakültesi Final Notu Hesaplayıcı</h2>
     <div id="komiteler">
       <div class="komite-input-group">
         <label>Komite 1:</label>
@@ -368,6 +402,7 @@
     </div>
     <div id="result">
       <div id="komite-ortalama"></div>
+      <div id="komite-notu"></div>
       <div id="final-text"></div>
       <span id="final-num">0</span>
       <div id="message"></div>
@@ -525,7 +560,7 @@
       const notlar = [];
       const resultDiv = document.getElementById('result');
       for (let i = 1; i <= komiteSayisi; i++) {
-        const input = document.getElementById('k'+i);
+        const input = document.getElementById('k' + i);
         const not = parseFloat(input.value);
         if (isNaN(not) || not < 0 || not > 100) {
           showMessage('Tüm komite notlarını 0–100 arası girmelisin intern doktor!', true);
@@ -540,21 +575,58 @@
       const ortalama = toplam / notlar.length;
 
       const komiteOrtalamaEl = document.getElementById('komite-ortalama');
+      const komiteNotuEl = document.getElementById('komite-notu');
       const finalTextEl = document.getElementById('final-text');
       const numEl = document.getElementById('final-num');
 
-      komiteOrtalamaEl.textContent = `Komite Ortalaman: ${ortalama.toFixed(2)}`;
+      komiteOrtalamaEl.textContent = `Komite Ortalaman:`;
+      komiteNotuEl.textContent = ortalama.toFixed(2);
+      
+      // Komite notuna göre renk belirle
+      let notKategori = '';
+      if (ortalama >= 90) {
+        notKategori = 'not-efsane';
+      } else if (ortalama >= 80) {
+        notKategori = 'not-cokIyi';
+      } else if (ortalama >= 70) {
+        notKategori = 'not-iyi';
+      } else if (ortalama >= 60) {
+        notKategori = 'not-fenaDegil';
+      } else if (ortalama >= 50) {
+        notKategori = 'not-vasatUstu';
+      } else if (ortalama >= 40) {
+        notKategori = 'not-vasat';
+      } else if (ortalama >= 30) {
+        notKategori = 'not-kotu';
+      } else {
+        notKategori = 'not-mal';
+      }
+      
+      // Önceki renk sınıflarını temizle
+      komiteNotuEl.className = '';
+      // Yeni renk sınıfını ekle
+      komiteNotuEl.classList.add(notKategori);
 
-      // --- YENİ GEÇME KURALI ---
+      // --- DÜZELTİLMİŞ MANTIK ---
+
+      // 1. DURUM: Ortalamayla direkt geçtiyse
       if (ortalama >= 79.5) {
         finalTextEl.style.display = 'none';
         numEl.textContent = 'GEÇTİN!';
         numEl.className = '';
-        showMessage(getRandomJoke('finalOver100')); // Üst sınırdaki espriyi kullandım
-        return;
+
+        // Sadece ortalamasına uygun "başarı" şakası gösterilir.
+        let jokeCategory;
+        if (ortalama < 85) {
+          jokeCategory = 'cokIyi';
+        } else {
+          jokeCategory = 'efsane';
+        }
+        showMessage(getRandomJoke(jokeCategory));
+        return; // Fonksiyon burada biter, başka şaka göstermez.
       }
 
-      // Finalsiz geçemediysen hesaplamaya devam
+      // 2. DURUM: Finale girmesi gerekiyorsa
       finalTextEl.style.display = 'block';
       finalTextEl.textContent = 'Finalden alman gereken minimum not:';
 
@@ -562,7 +634,9 @@
       const finalNotu = Math.max(gerekenNot, 50);
 
       numEl.textContent = finalNotu.toFixed(1);
+      numEl.className = ''; // Önceki uyarıları temizle
 
+      // Sadece alması gereken finale göre şaka kategorisi belirlenir.
       let jokeCategory;
       if (finalNotu > 100) {
         numEl.className = 'warning';
@@ -578,19 +652,10 @@
       } else if (finalNotu >= 50) {
         jokeCategory = 'final50_57';
       } else {
-        jokeCategory = 'final49_5';
+        jokeCategory = 'final49_5'; 
       }
+      
       showMessage(getRandomJoke(jokeCategory), finalNotu > 100);
-
-      // Komite ortalamasına göre espriler
-      if (ortalama < 34) showMessage(getRandomJoke('mal'));
-      else if (ortalama < 50) showMessage(getRandomJoke('kotu'));
-      else if (ortalama < 60) showMessage(getRandomJoke('vasat'));
-      else if (ortalama < 64) showMessage(getRandomJoke('vasatUstu'));
-      else if (ortalama < 70) showMessage(getRandomJoke('fenaDegil'));
-      else if (ortalama < 77) showMessage(getRandomJoke('iyi'));
-      else if (ortalama < 85) showMessage(getRandomJoke('cokIyi'));
-      else showMessage(getRandomJoke('efsane'));
     }
 
     function showMessage(txt, isWarning = false) {
